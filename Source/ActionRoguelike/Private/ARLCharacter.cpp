@@ -4,6 +4,7 @@
 #include "ARLCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -13,10 +14,18 @@ AARLCharacter::AARLCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
+	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->SetupAttachment(RootComponent);
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(SpringArmComponent);
+
+	// true: Rotate Character towards movement direction
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	
+	//~ true: Character rotates with camera
+	//~ false: Camera only rotation
+	bUseControllerRotationYaw = false;
 	
 }
 
@@ -25,11 +34,6 @@ void AARLCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-}
-
-void AARLCharacter::MoveForward(float val)
-{
-	AddMovementInput(GetActorForwardVector(), val);
 }
 
 // Called every frame
@@ -46,8 +50,43 @@ void AARLCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	
 	//~ Input Mapping has been deprecated replace with Enhanced Input system later
 	PlayerInputComponent->BindAxis("MoveForward", this, &AARLCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AARLCharacter::MoveRight);
 
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);	
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AARLCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	//~
 }
 
+void AARLCharacter::MoveForward(float val)
+{
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0.0f;
+	ControlRot.Roll = 0.0f;
+	
+	AddMovementInput(ControlRot.Vector(), val);
+}
+
+void AARLCharacter::MoveRight(float val)
+{
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0.0f;
+	ControlRot.Roll = 0.0f;
+
+	FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
+	
+	AddMovementInput(RightVector, val);
+}
+
+void AARLCharacter::PrimaryAttack()
+{
+	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+}

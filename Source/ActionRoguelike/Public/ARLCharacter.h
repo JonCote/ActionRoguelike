@@ -14,6 +14,11 @@ class ACTIONROGUELIKE_API AARLCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+protected:
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ProjectileClass;
+
 public:
 	// Sets default values for this character's properties
 	AARLCharacter();
@@ -31,6 +36,10 @@ protected:
 
 	void MoveForward(float val);
 
+	void MoveRight(float val);
+
+	void PrimaryAttack();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -39,3 +48,4 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
+
