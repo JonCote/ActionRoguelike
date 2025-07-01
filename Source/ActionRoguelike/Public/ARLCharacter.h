@@ -6,8 +6,10 @@
 #include "GameFramework/Character.h"
 #include "ARLCharacter.generated.h"
 
+class UARLInteractionComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class UAnimMontage;
 
 UCLASS()
 class ACTIONROGUELIKE_API AARLCharacter : public ACharacter
@@ -16,9 +18,15 @@ class ACTIONROGUELIKE_API AARLCharacter : public ACharacter
 
 protected:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> ProjectileClass;
 
+	UPROPERTY(EditAnywhere, Category="Attack")
+	UAnimMontage* AttackAnim;
+	
+	FTimerHandle TimerHandle_PrimaryAttack;
+	
+	
 public:
 	// Sets default values for this character's properties
 	AARLCharacter();
@@ -30,6 +38,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	UARLInteractionComponent* InteractionComponent;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,6 +50,10 @@ protected:
 	void MoveRight(float val);
 
 	void PrimaryAttack();
+
+	void PrimaryAttack_TimeElapsed();
+
+	void PrimaryInteract();
 
 public:	
 	// Called every frame

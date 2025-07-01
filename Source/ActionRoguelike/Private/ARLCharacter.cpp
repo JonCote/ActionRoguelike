@@ -3,9 +3,11 @@
 
 #include "ARLCharacter.h"
 
+#include "ARLInteractionComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ARLInteractionComponent.h"
 
 // Sets default values
 AARLCharacter::AARLCharacter()
@@ -20,6 +22,8 @@ AARLCharacter::AARLCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
+	InteractionComponent = CreateDefaultSubobject<UARLInteractionComponent>("InteractionComponent");
+	
 	// true: Rotate Character towards movement direction
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
@@ -57,6 +61,7 @@ void AARLCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AARLCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AARLCharacter::PrimaryInteract);
 	//~
 }
 
@@ -82,11 +87,28 @@ void AARLCharacter::MoveRight(float val)
 
 void AARLCharacter::PrimaryAttack()
 {
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AARLCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+	
+}
+
+void AARLCharacter::PrimaryAttack_TimeElapsed()
+{
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
 	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
 	
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+}
+
+void AARLCharacter::PrimaryInteract()
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->PrimaryInteract();
+	}
 }
