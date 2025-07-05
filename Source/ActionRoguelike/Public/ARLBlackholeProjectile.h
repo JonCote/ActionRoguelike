@@ -4,22 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "ARLProjectile.h"
-#include "ARLMagicProjectile.generated.h"
+#include "ARLBlackholeProjectile.generated.h"
 
+class URadialForceComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API AARLMagicProjectile : public AARLProjectile
+class ACTIONROGUELIKE_API AARLBlackholeProjectile : public AARLProjectile
 {
 	GENERATED_BODY()
-	
+
 public:
 	
-	AARLMagicProjectile();
+	AARLBlackholeProjectile();
 
 protected:
 
-	UFUNCTION()
-	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* DestroySphereComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	URadialForceComponent* RadialForceComponent;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -27,5 +31,4 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 };

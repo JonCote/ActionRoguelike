@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ARLCharacter.generated.h"
 
+class UARLAttributeComponent;
 class UARLInteractionComponent;
 class UCameraComponent;
 class USpringArmComponent;
@@ -19,12 +20,18 @@ class ACTIONROGUELIKE_API AARLCharacter : public ACharacter
 protected:
 
 	UPROPERTY(EditAnywhere, Category="Attack")
-	TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> PrimaryAttack_ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category="Attack")
+	TSubclassOf<AActor> AbilityOne_ProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category="Attack")
 	UAnimMontage* AttackAnim;
 	
 	FTimerHandle TimerHandle_PrimaryAttack;
+	FTimerHandle TimerHandle_AbilityOne;
+
+	FHitResult LookHitResult;
 	
 	
 public:
@@ -41,6 +48,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UARLInteractionComponent* InteractionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UARLAttributeComponent* AttributeComponent;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,6 +62,10 @@ protected:
 	void PrimaryAttack();
 
 	void PrimaryAttack_TimeElapsed();
+
+	void AbilityOne();
+
+	void AbilityOne_TimeElapsed();
 
 	void PrimaryInteract();
 

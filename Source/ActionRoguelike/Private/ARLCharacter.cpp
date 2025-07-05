@@ -3,11 +3,13 @@
 
 #include "ARLCharacter.h"
 
+#include "ARLAttributeComponent.h"
 #include "ARLInteractionComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ARLInteractionComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AARLCharacter::AARLCharacter()
@@ -23,6 +25,7 @@ AARLCharacter::AARLCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	InteractionComponent = CreateDefaultSubobject<UARLInteractionComponent>("InteractionComponent");
+	AttributeComponent = CreateDefaultSubobject<UARLAttributeComponent>("AttributeComponent");
 	
 	// true: Rotate Character towards movement direction
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -44,7 +47,6 @@ void AARLCharacter::BeginPlay()
 void AARLCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -60,6 +62,7 @@ void AARLCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AARLCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("AbilityOne", IE_Pressed, this, &AARLCharacter::AbilityOne);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AARLCharacter::PrimaryInteract);
 	//~
@@ -87,22 +90,76 @@ void AARLCharacter::MoveRight(float val)
 
 void AARLCharacter::PrimaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
+	if (ensureAlways(PrimaryAttack_ProjectileClass))
+	{
+		PlayAnimMontage(AttackAnim);
 
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AARLCharacter::PrimaryAttack_TimeElapsed, 0.2f);
-	
+		GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AARLCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+	}
 }
 
 void AARLCharacter::PrimaryAttack_TimeElapsed()
 {
+	FVector CameraLocation = CameraComponent->GetComponentLocation();
+	FVector CameraForwards = CameraComponent->GetForwardVector();
+	FVector Start = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
+	FVector End = CameraLocation + (CameraForwards * 5000.f);
+	bool bBlockingHit = GetWorld()->LineTraceSingleByChannel(LookHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+	//FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
+	//DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
+	
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
+	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
+	if (bBlockingHit)
+	{
+		Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, LookHitResult.ImpactPoint);
+	}
+	
+	FTransform SpawnTM = FTransform(Rot, HandLocation);
 	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = this;
 	
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+	GetWorld()->SpawnActor<AActor>(PrimaryAttack_ProjectileClass, SpawnTM, SpawnParams);
+}
+
+void AARLCharacter::AbilityOne()
+{
+	if (ensureAlways(AbilityOne_ProjectileClass))
+	{
+		PlayAnimMontage(AttackAnim);
+
+		GetWorldTimerManager().SetTimer(TimerHandle_AbilityOne, this, &AARLCharacter::AbilityOne_TimeElapsed, 0.2f);
+	}
+}
+
+void AARLCharacter::AbilityOne_TimeElapsed()
+{
+	FVector CameraLocation = CameraComponent->GetComponentLocation();
+	FVector CameraForwards = CameraComponent->GetForwardVector();
+	FVector Start = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
+	FVector End = CameraLocation + (CameraForwards * 5000.f);
+	bool bBlockingHit = GetWorld()->LineTraceSingleByChannel(LookHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+	//FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
+	//DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
+	
+	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
+	if (bBlockingHit)
+	{
+		Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, LookHitResult.ImpactPoint);
+	}
+	
+	FTransform SpawnTM = FTransform(Rot, HandLocation);
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
+	
+	GetWorld()->SpawnActor<AActor>(AbilityOne_ProjectileClass, SpawnTM, SpawnParams);
 }
 
 void AARLCharacter::PrimaryInteract()
