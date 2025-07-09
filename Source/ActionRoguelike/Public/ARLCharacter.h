@@ -26,10 +26,17 @@ protected:
 	TSubclassOf<AActor> AbilityOne_ProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category="Attack")
+	TSubclassOf<AActor> AbilityTwo_ProjectileClass;
+	
+	UPROPERTY(EditAnywhere, Category="Attack")
 	UAnimMontage* AttackAnim;
+
+	UPROPERTY(EditAnywhere, Category="Attack")
+	float AttackAnimDelay = 0.2f;
 	
 	FTimerHandle TimerHandle_PrimaryAttack;
 	FTimerHandle TimerHandle_AbilityOne;
+	FTimerHandle TimerHandle_AbilityTwo;
 
 	FHitResult LookHitResult;
 	
@@ -67,7 +74,13 @@ protected:
 
 	void AbilityOne_TimeElapsed();
 
+	void AbilityTwo();
+
+    void AbilityTwo_TimeElapsed();
+
 	void PrimaryInteract();
+
+	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 public:	
 	// Called every frame

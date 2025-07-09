@@ -5,39 +5,62 @@
 
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
-// Sets default values
+
 AARLProjectile::AARLProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-	
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
 	SphereComponent->SetCollisionProfileName("Projectile");
+	SphereComponent->OnComponentHit.AddDynamic(this, &AARLProjectile::OnActorHit);
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AARLProjectile::OnActorOverlap);
 	RootComponent = SphereComponent;
 
 	EffectComponent = CreateDefaultSubobject<UParticleSystemComponent>("EffectComponent");
 	EffectComponent->SetupAttachment(SphereComponent);
 
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComponent");
-	MovementComponent->InitialSpeed = 1000.0f;
 	MovementComponent->bRotationFollowsVelocity = true;
 	MovementComponent->bInitialVelocityInLocalSpace = true;
+	MovementComponent->ProjectileGravityScale = 0.0f;
+	MovementComponent->InitialSpeed = 1000.0f;
 
 }
 
-// Called when the game starts or when spawned
-void AARLProjectile::BeginPlay()
+void AARLProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::BeginPlay();
-	
+	Explode();
 }
 
-// Called every frame
-void AARLProjectile::Tick(float DeltaTime)
+void AARLProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::Tick(DeltaTime);
-
+	if (OtherActor && OtherActor != GetInstigator())
+	{
+		Explode();
+	}
 }
+
+
+void AARLProjectile::Explode_Implementation()
+{
+	if (ensure(IsValid(this)))
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+
+		Destroy();
+	}
+}
+
+void AARLProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+}
+
+
+
+
+
 

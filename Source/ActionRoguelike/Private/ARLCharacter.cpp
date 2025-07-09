@@ -63,6 +63,7 @@ void AARLCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AARLCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("AbilityOne", IE_Pressed, this, &AARLCharacter::AbilityOne);
+	PlayerInputComponent->BindAction("AbilityTwo", IE_Pressed, this, &AARLCharacter::AbilityTwo);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AARLCharacter::PrimaryInteract);
 	//~
@@ -90,76 +91,79 @@ void AARLCharacter::MoveRight(float val)
 
 void AARLCharacter::PrimaryAttack()
 {
-	if (ensureAlways(PrimaryAttack_ProjectileClass))
-	{
-		PlayAnimMontage(AttackAnim);
+	PlayAnimMontage(AttackAnim);
 
-		GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AARLCharacter::PrimaryAttack_TimeElapsed, 0.2f);
-	}
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AARLCharacter::PrimaryAttack_TimeElapsed, AttackAnimDelay);
+	
 }
 
 void AARLCharacter::PrimaryAttack_TimeElapsed()
 {
-	FVector CameraLocation = CameraComponent->GetComponentLocation();
-	FVector CameraForwards = CameraComponent->GetForwardVector();
-	FVector Start = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
-	FVector End = CameraLocation + (CameraForwards * 5000.f);
-	bool bBlockingHit = GetWorld()->LineTraceSingleByChannel(LookHitResult, Start, End, ECollisionChannel::ECC_Visibility);
-
-	//FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
-	//DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
-	
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
-	if (bBlockingHit)
-	{
-		Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, LookHitResult.ImpactPoint);
-	}
-	
-	FTransform SpawnTM = FTransform(Rot, HandLocation);
-	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
-	
-	GetWorld()->SpawnActor<AActor>(PrimaryAttack_ProjectileClass, SpawnTM, SpawnParams);
+	SpawnProjectile(PrimaryAttack_ProjectileClass);
 }
 
 void AARLCharacter::AbilityOne()
 {
-	if (ensureAlways(AbilityOne_ProjectileClass))
-	{
-		PlayAnimMontage(AttackAnim);
+	PlayAnimMontage(AttackAnim);
 
-		GetWorldTimerManager().SetTimer(TimerHandle_AbilityOne, this, &AARLCharacter::AbilityOne_TimeElapsed, 0.2f);
-	}
+	GetWorldTimerManager().SetTimer(TimerHandle_AbilityOne, this, &AARLCharacter::AbilityOne_TimeElapsed, AttackAnimDelay);
 }
 
 void AARLCharacter::AbilityOne_TimeElapsed()
 {
-	FVector CameraLocation = CameraComponent->GetComponentLocation();
-	FVector CameraForwards = CameraComponent->GetForwardVector();
-	FVector Start = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
-	FVector End = CameraLocation + (CameraForwards * 5000.f);
-	bool bBlockingHit = GetWorld()->LineTraceSingleByChannel(LookHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+	SpawnProjectile(AbilityOne_ProjectileClass);
+}
 
-	//FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red;
-	//DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
-	
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
-	if (bBlockingHit)
+void AARLCharacter::AbilityTwo()
+{
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_AbilityTwo, this, &AARLCharacter::AbilityTwo_TimeElapsed, AttackAnimDelay);
+}
+
+void AARLCharacter::AbilityTwo_TimeElapsed()
+{
+	SpawnProjectile(AbilityTwo_ProjectileClass);
+}
+
+void AARLCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
+{
+	if (ensureAlways(ClassToSpawn))
 	{
-		Rot = UKismetMathLibrary::FindLookAtRotation(HandLocation, LookHitResult.ImpactPoint);
+		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = this;
+
+		FCollisionShape Shape;
+		Shape.SetSphere(20.0f);
+
+		// Ignore Player
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		FCollisionObjectQueryParams ObjectQueryParams;
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+
+		FVector CameraLocation = CameraComponent->GetComponentLocation();
+		FVector CameraForwards = CameraComponent->GetForwardVector();
+		FVector TraceStart = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
+		FVector TraceEnd = CameraLocation + (CameraForwards * 5000.f);
+
+		FHitResult Hit;
+		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape, Params))
+		{
+			TraceEnd = Hit.ImpactPoint;
+		}
+
+		FRotator ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
+
+		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
+		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
 	}
-	
-	FTransform SpawnTM = FTransform(Rot, HandLocation);
-	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
-	
-	GetWorld()->SpawnActor<AActor>(AbilityOne_ProjectileClass, SpawnTM, SpawnParams);
 }
 
 void AARLCharacter::PrimaryInteract()

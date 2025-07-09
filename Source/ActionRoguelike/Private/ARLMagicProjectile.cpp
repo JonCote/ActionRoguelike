@@ -26,7 +26,7 @@ void AARLMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponen
 		{
 			AttributeComp->ApplyHealthChange(-20.0f);
 
-			Destroy();
+			Super::OnActorOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 		}
 	}
 }
