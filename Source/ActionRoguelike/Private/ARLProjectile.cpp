@@ -3,6 +3,7 @@
 
 #include "ARLProjectile.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -26,6 +27,7 @@ AARLProjectile::AARLProjectile()
 	MovementComponent->ProjectileGravityScale = 0.0f;
 	MovementComponent->InitialSpeed = 1000.0f;
 
+	//AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
 }
 
 void AARLProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

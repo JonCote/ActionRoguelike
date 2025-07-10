@@ -15,6 +15,8 @@ bool UARLAttributeComponent::ApplyHealthChange(float Delta)
 {
 	Health += Delta;
 
+	FMath::Clamp(Health, 0, MaxHealth);
+	
 	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
 	
 	return true;

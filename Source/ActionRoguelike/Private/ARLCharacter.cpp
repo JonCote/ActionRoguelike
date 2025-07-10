@@ -174,4 +174,9 @@ void AARLCharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeCompon
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
 	}
+
+	if (Delta < 0.0f)
+	{
+		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+	}
 }
