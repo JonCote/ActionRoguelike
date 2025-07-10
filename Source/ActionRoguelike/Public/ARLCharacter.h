@@ -39,13 +39,6 @@ protected:
 	FTimerHandle TimerHandle_AbilityTwo;
 
 	FHitResult LookHitResult;
-	
-	
-public:
-	// Sets default values for this character's properties
-	AARLCharacter();
-
-protected:
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComponent;
@@ -58,9 +51,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UARLAttributeComponent* AttributeComponent;
-	
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	void MoveForward(float val);
 
@@ -82,12 +72,18 @@ protected:
 
 	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, UARLAttributeComponent* OwningComp, float NewHealth, float Delta);
 
+	virtual void PostInitializeComponents() override;
+
+public:	
+	
+	AARLCharacter();
+	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
+
 

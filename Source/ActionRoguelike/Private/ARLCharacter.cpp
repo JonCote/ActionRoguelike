@@ -14,9 +14,7 @@
 // Sets default values
 AARLCharacter::AARLCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -36,17 +34,11 @@ AARLCharacter::AARLCharacter()
 	
 }
 
-// Called when the game starts or when spawned
-void AARLCharacter::BeginPlay()
+void AARLCharacter::PostInitializeComponents()
 {
-	Super::BeginPlay();
-	
-}
+	Super::PostInitializeComponents();
 
-// Called every frame
-void AARLCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	AttributeComponent->OnHealthChanged.AddDynamic(this, &AARLCharacter::OnHealthChanged);
 }
 
 // Called to bind functionality to input
@@ -171,5 +163,15 @@ void AARLCharacter::PrimaryInteract()
 	if (InteractionComponent)
 	{
 		InteractionComponent->PrimaryInteract();
+	}
+}
+
+void AARLCharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeComponent* OwningComp, float NewHealth,
+	float Delta)
+{
+	if (NewHealth <= 0.0f && Delta < 0.0f)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		DisableInput(PC);
 	}
 }

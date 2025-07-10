@@ -20,4 +20,9 @@ bool UARLAttributeComponent::ApplyHealthChange(float Delta)
 	return true;
 }
 
+bool UARLAttributeComponent::IsAlive() const
+{
+	return Health > 0.0f;
+}
+
 

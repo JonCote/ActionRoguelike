@@ -25,12 +25,15 @@ protected:
 	float MaxHealth;
 
 public:
-
+	
 	UPROPERTY(BlueprintAssignable, Category="Attributes")
 	FOnHealthChanged OnHealthChanged;
 	
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	bool ApplyHealthChange(float Delta);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsAlive() const;
 
 	
 };
