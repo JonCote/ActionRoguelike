@@ -27,7 +27,8 @@ AARLProjectile::AARLProjectile()
 	MovementComponent->ProjectileGravityScale = 0.0f;
 	MovementComponent->InitialSpeed = 1000.0f;
 
-	//AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 void AARLProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

@@ -19,6 +19,9 @@ class ACTIONROGUELIKE_API AARLCharacter : public ACharacter
 
 protected:
 
+	UPROPERTY(VisibleAnywhere, Category="Effects")
+	FName HandSocketName;
+	
 	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> PrimaryAttack_ProjectileClass;
 

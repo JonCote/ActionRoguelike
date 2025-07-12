@@ -11,15 +11,15 @@ UARLAttributeComponent::UARLAttributeComponent()
 }
 
 
-bool UARLAttributeComponent::ApplyHealthChange(float Delta)
+bool UARLAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
-	Health += Delta;
+	float OldHealth = Health;
+	Health = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
 
-	FMath::Clamp(Health, 0, MaxHealth);
+	float ActualDelta = Health - OldHealth;
+	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 	
-	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
-	
-	return true;
+	return ActualDelta != 0.0f;
 }
 
 bool UARLAttributeComponent::IsAlive() const

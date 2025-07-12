@@ -31,6 +31,8 @@ AARLCharacter::AARLCharacter()
 	//~ true: Character rotates with camera
 	//~ false: Camera only rotation
 	bUseControllerRotationYaw = false;
+
+	HandSocketName = "Muzzle_01";
 	
 }
 
@@ -122,7 +124,7 @@ void AARLCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
 {
 	if (ensureAlways(ClassToSpawn))
 	{
-		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
