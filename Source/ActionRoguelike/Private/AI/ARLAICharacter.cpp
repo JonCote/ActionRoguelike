@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "ARLAttributeComponent.h"
+#include "ARLWorldUserWidget.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/PawnSensingComponent.h"
@@ -17,6 +18,8 @@ AARLAICharacter::AARLAICharacter()
 	AttributeComponent = CreateDefaultSubobject<UARLAttributeComponent>("AttributeComponent");
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	TimeToHitParamName = "TimeToHit";
 }
 
 void AARLAICharacter::PostInitializeComponents()
@@ -41,6 +44,20 @@ void AARLAICharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeComp
 		{
 			SetTargetActor(InstigatorActor);
 		}
+
+		if (ActiveHealthBar == nullptr)
+		{
+			ActiveHealthBar = CreateWidget<UARLWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
+			if (ActiveHealthBar)
+			{
+				ActiveHealthBar->AttachedActor = this;
+				ActiveHealthBar->AddToViewport();
+			}
+		}
+		
+		
+
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 		
 		if (NewHealth <= 0.0f)
 		{
@@ -58,15 +75,9 @@ void AARLAICharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeComp
 			
 			
 		}
-		
-		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
 	}
 }
 
-bool AARLAICharacter::IsAlive()
-{
-	return AttributeComponent->IsAlive();
-}
 
 void AARLAICharacter::SetTargetActor(AActor* NewTargetActor)
 {

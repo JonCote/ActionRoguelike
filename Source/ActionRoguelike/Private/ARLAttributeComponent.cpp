@@ -3,6 +3,7 @@
 
 #include "ARLAttributeComponent.h"
 
+
 // Sets default values for this component's properties
 UARLAttributeComponent::UARLAttributeComponent()
 {
@@ -10,9 +11,33 @@ UARLAttributeComponent::UARLAttributeComponent()
 	MaxHealth = 100;
 }
 
+bool UARLAttributeComponent::IsAlive() const
+{
+	return Health > 0.0f;
+}
+
+bool UARLAttributeComponent::Kill(AActor* InstigatorActor)
+{
+	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
+}
+
+bool UARLAttributeComponent::IsFullHealth() const
+{
+	return Health == MaxHealth;
+}
+
+float UARLAttributeComponent::GetHealthMax() const
+{
+	return MaxHealth;
+}
 
 bool UARLAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
+	if (!GetOwner()->CanBeDamaged())
+	{
+		return false;
+	}
+	
 	float OldHealth = Health;
 	Health = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
 
@@ -22,9 +47,23 @@ bool UARLAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float De
 	return ActualDelta != 0.0f;
 }
 
-bool UARLAttributeComponent::IsAlive() const
+UARLAttributeComponent* UARLAttributeComponent::GetAttributes(AActor* FromActor)
 {
-	return Health > 0.0f;
+	if (FromActor)
+	{
+		return Cast<UARLAttributeComponent>(FromActor->GetComponentByClass(UARLAttributeComponent::StaticClass()));
+	}
+
+	return nullptr;
 }
 
+bool UARLAttributeComponent::IsActorAlive(AActor* Actor)
+{
+	UARLAttributeComponent* AttributeComponent = GetAttributes(Actor);
+	if (AttributeComponent)
+	{
+		return AttributeComponent->IsAlive();
+	}
+	return false;
+}
 

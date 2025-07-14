@@ -21,6 +21,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName HandSocketName;
+
+	UPROPERTY(VisibleAnywhere, Category="Effects")
+	FName TimeToHitParamName;
 	
 	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> PrimaryAttack_ProjectileClass;
@@ -87,6 +90,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Exec)
+	void HealSelf(float Amount=100);
+	
 };
 
 

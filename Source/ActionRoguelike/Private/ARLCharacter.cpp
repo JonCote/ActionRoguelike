@@ -33,6 +33,7 @@ AARLCharacter::AARLCharacter()
 	bUseControllerRotationYaw = false;
 
 	HandSocketName = "Muzzle_01";
+	TimeToHitParamName = "TimeToHit";
 	
 }
 
@@ -179,6 +180,11 @@ void AARLCharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeCompon
 
 	if (Delta < 0.0f)
 	{
-		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 	}
+}
+
+void AARLCharacter::HealSelf(float Amount /* = 100 */)
+{
+	AttributeComponent->ApplyHealthChange(this, Amount);
 }

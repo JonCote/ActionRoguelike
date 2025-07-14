@@ -3,6 +3,7 @@
 
 #include "ARLGameModeBase.h"
 
+#include "ARLAttributeComponent.h"
 #include "EngineUtils.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
@@ -21,13 +22,15 @@ void AARLGameModeBase::StartPlay()
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &AARLGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 }
 
+
 void AARLGameModeBase::SpawnBotTimerElapsed()
 {
 	int32 NumOfAliveBots = 0;
 	for (TActorIterator<AARLAICharacter> It(GetWorld()); It; ++It)
 	{
 		AARLAICharacter* Bot = *It;
-		if (Bot->IsAlive())
+		UARLAttributeComponent* AttributeComponent = UARLAttributeComponent::GetAttributes(Bot);
+		if (ensure(AttributeComponent) && AttributeComponent->IsAlive())
 		{
 			NumOfAliveBots++;
 		}
@@ -64,5 +67,18 @@ void AARLGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* Query
 	if (Locations.IsValidIndex(0))
 	{
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
+	}
+}
+
+void AARLGameModeBase::KillAll()
+{
+	for (TActorIterator<AARLAICharacter> It(GetWorld()); It; ++It)
+	{
+		AARLAICharacter* Bot = *It;
+		UARLAttributeComponent* AttributeComponent = UARLAttributeComponent::GetAttributes(Bot);
+		if (ensure(AttributeComponent) && AttributeComponent->IsAlive())
+		{
+			AttributeComponent->Kill(this); // @fixme: pass in player? for kill credit
+		}
 	}
 }
