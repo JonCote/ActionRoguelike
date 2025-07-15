@@ -4,10 +4,13 @@
 #include "ARLGameModeBase.h"
 
 #include "ARLAttributeComponent.h"
+#include "ARLCharacter.h"
 #include "EngineUtils.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "AI/ARLAICharacter.h"
+
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("arl.SpawnBots"), true, TEXT("Whether or not to spawn bots."), ECVF_Cheat);
 
 
 AARLGameModeBase::AARLGameModeBase()
@@ -25,6 +28,12 @@ void AARLGameModeBase::StartPlay()
 
 void AARLGameModeBase::SpawnBotTimerElapsed()
 {
+	if (!CVarSpawnBots.GetValueOnGameThread())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar 'CVarSpawnBots'."));
+		return;
+	}
+	
 	int32 NumOfAliveBots = 0;
 	for (TActorIterator<AARLAICharacter> It(GetWorld()); It; ++It)
 	{
@@ -68,6 +77,32 @@ void AARLGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* Query
 	{
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
 	}
+}
+
+void AARLGameModeBase::RespawnPlayerElapsed(AController* Controller)
+{
+	if (ensure(Controller))
+	{
+		Controller->UnPossess();
+		RestartPlayer(Controller);
+	}
+}
+
+void AARLGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
+{
+	AARLCharacter* Player = Cast<AARLCharacter>(VictimActor);
+	if (Player)
+	{
+		FTimerHandle TimerHandle_RespawnDelay;
+
+		FTimerDelegate Delegate;
+		Delegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+
+		float RespawnDelay = 2.0f;
+		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, RespawnDelay, false);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victom: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
 }
 
 void AARLGameModeBase::KillAll()

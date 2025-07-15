@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "ARLInteractionComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -42,6 +43,11 @@ void AARLCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	AttributeComponent->OnHealthChanged.AddDynamic(this, &AARLCharacter::OnHealthChanged);
+}
+
+FVector AARLCharacter::GetPawnViewLocation() const
+{
+	return CameraComponent->GetComponentLocation() + (CameraComponent->GetForwardVector() * SpringArmComponent->TargetArmLength);
 }
 
 // Called to bind functionality to input
@@ -174,8 +180,15 @@ void AARLCharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeCompon
 {
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
+		
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->DisableMovement();
+
+		SetLifeSpan(10.0f);
+		
 	}
 
 	if (Delta < 0.0f)

@@ -7,6 +7,8 @@
 #include "ProfilingDebugging/CookStats.h"
 
 
+static TAutoConsoleVariable<bool> CVarDebugDrawInteraction(TEXT("arl.InteractionDebugDraw"), false, TEXT("Enable Debug Lines for Interact Component."), ECVF_Cheat);
+
 // Sets default values for this component's properties
 UARLInteractionComponent::UARLInteractionComponent()
 {
@@ -36,8 +38,10 @@ void UARLInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	// ...
 }
 
-void UARLInteractionComponent::PrimaryInteract()
+void UARLInteractionComponent::PrimaryInteract()	// @fixme: Make Interaction trace hit where crosshair is pointed
 {
+	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
+	
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
@@ -48,9 +52,6 @@ void UARLInteractionComponent::PrimaryInteract()
 	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 	
 	FVector End = EyeLocation + (EyeRotation.Vector() * 200);
-	
-	//FHitResult Hit;
-	//bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, EyeLocation, End, ObjectQueryParams);
 
 	float Radius = 30.f;
 	FCollisionShape Shape;
@@ -64,10 +65,13 @@ void UARLInteractionComponent::PrimaryInteract()
 	{
 		if (AActor* HitActor = Hit.GetActor())
 		{
-			if (HitActor->Implements<UARLGameplayInterface>())
+			if (bDebugDraw)
 			{
 				DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, LineColor, false, 2.0f);
-				
+			}
+			
+			if (HitActor->Implements<UARLGameplayInterface>())
+			{
 				APawn* MyPawn = Cast<APawn>(MyOwner);
 			
 				IARLGameplayInterface::Execute_Interact(HitActor, MyPawn);
@@ -75,9 +79,9 @@ void UARLInteractionComponent::PrimaryInteract()
 			}
 		}
 	}
-	
-	DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 2.0f);
-
-	
+	if (bDebugDraw)
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 2.0f);
+	}
 	
 }

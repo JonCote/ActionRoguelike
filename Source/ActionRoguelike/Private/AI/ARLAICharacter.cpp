@@ -10,6 +10,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AARLAICharacter::AARLAICharacter()
@@ -18,6 +20,9 @@ AARLAICharacter::AARLAICharacter()
 	AttributeComponent = CreateDefaultSubobject<UARLAttributeComponent>("AttributeComponent");
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParamName = "TimeToHit";
 }
@@ -58,7 +63,8 @@ void AARLAICharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeComp
 		
 
 		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
-		
+
+		// Died
 		if (NewHealth <= 0.0f)
 		{
 			// Dead: Stop BT, ragdoll, and set lifespan
@@ -72,6 +78,9 @@ void AARLAICharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeComp
 			GetMesh()->SetCollisionProfileName("Ragdoll");
 
 			SetLifeSpan(10.0f);
+
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetCharacterMovement()->DisableMovement();
 			
 			
 		}
