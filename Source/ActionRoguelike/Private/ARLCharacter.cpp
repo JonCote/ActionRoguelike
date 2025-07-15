@@ -3,6 +3,7 @@
 
 #include "ARLCharacter.h"
 
+#include "ARLActionComponent.h"
 #include "ARLAttributeComponent.h"
 #include "ARLInteractionComponent.h"
 #include "Camera/CameraComponent.h"
@@ -25,6 +26,7 @@ AARLCharacter::AARLCharacter()
 
 	InteractionComponent = CreateDefaultSubobject<UARLInteractionComponent>("InteractionComponent");
 	AttributeComponent = CreateDefaultSubobject<UARLAttributeComponent>("AttributeComponent");
+	ActionComponent =  CreateDefaultSubobject<UARLActionComponent>("ActionComponent");
 	
 	// true: Rotate Character towards movement direction
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -33,7 +35,6 @@ AARLCharacter::AARLCharacter()
 	//~ false: Camera only rotation
 	bUseControllerRotationYaw = false;
 
-	HandSocketName = "Muzzle_01";
 	TimeToHitParamName = "TimeToHit";
 	
 }
@@ -67,6 +68,8 @@ void AARLCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("AbilityTwo", IE_Pressed, this, &AARLCharacter::AbilityTwo);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AARLCharacter::PrimaryInteract);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AARLCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AARLCharacter::SprintEnd);
 	//~
 }
 
@@ -90,81 +93,29 @@ void AARLCharacter::MoveRight(float val)
 	AddMovementInput(RightVector, val);
 }
 
-void AARLCharacter::PrimaryAttack()
+void AARLCharacter::SprintStart()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &AARLCharacter::PrimaryAttack_TimeElapsed, AttackAnimDelay);
-	
+	ActionComponent->StartActionByName(this, "Sprint");
 }
 
-void AARLCharacter::PrimaryAttack_TimeElapsed()
+void AARLCharacter::SprintEnd()
 {
-	SpawnProjectile(PrimaryAttack_ProjectileClass);
+	ActionComponent->StopActionByName(this, "Sprint");
+}
+
+void AARLCharacter::PrimaryAttack()
+{
+	ActionComponent->StartActionByName(this, "PrimaryAttack");
 }
 
 void AARLCharacter::AbilityOne()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_AbilityOne, this, &AARLCharacter::AbilityOne_TimeElapsed, AttackAnimDelay);
-}
-
-void AARLCharacter::AbilityOne_TimeElapsed()
-{
-	SpawnProjectile(AbilityOne_ProjectileClass);
+	ActionComponent->StartActionByName(this, "Blackhole");
 }
 
 void AARLCharacter::AbilityTwo()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_AbilityTwo, this, &AARLCharacter::AbilityTwo_TimeElapsed, AttackAnimDelay);
-}
-
-void AARLCharacter::AbilityTwo_TimeElapsed()
-{
-	SpawnProjectile(AbilityTwo_ProjectileClass);
-}
-
-void AARLCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
-{
-	if (ensureAlways(ClassToSpawn))
-	{
-		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = this;
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		// Ignore Player
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		FCollisionObjectQueryParams ObjectQueryParams;
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
-		FVector CameraLocation = CameraComponent->GetComponentLocation();
-		FVector CameraForwards = CameraComponent->GetForwardVector();
-		FVector TraceStart = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
-		FVector TraceEnd = CameraLocation + (CameraForwards * 5000.f);
-
-		FHitResult Hit;
-		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape, Params))
-		{
-			TraceEnd = Hit.ImpactPoint;
-		}
-
-		FRotator ProjRotation = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
-
-		FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
-	}
+	ActionComponent->StartActionByName(this, "Dash");
 }
 
 void AARLCharacter::PrimaryInteract()

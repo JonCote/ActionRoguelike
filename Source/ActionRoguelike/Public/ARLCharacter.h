@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ARLCharacter.generated.h"
 
+class UARLActionComponent;
 class UARLAttributeComponent;
 class UARLInteractionComponent;
 class UCameraComponent;
@@ -18,33 +19,9 @@ class ACTIONROGUELIKE_API AARLCharacter : public ACharacter
 	GENERATED_BODY()
 
 protected:
-
-	UPROPERTY(VisibleAnywhere, Category="Effects")
-	FName HandSocketName;
-
+	
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName TimeToHitParamName;
-	
-	UPROPERTY(EditAnywhere, Category="Attack")
-	TSubclassOf<AActor> PrimaryAttack_ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category="Attack")
-	TSubclassOf<AActor> AbilityOne_ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category="Attack")
-	TSubclassOf<AActor> AbilityTwo_ProjectileClass;
-	
-	UPROPERTY(EditAnywhere, Category="Attack")
-	UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category="Attack")
-	float AttackAnimDelay = 0.2f;
-	
-	FTimerHandle TimerHandle_PrimaryAttack;
-	FTimerHandle TimerHandle_AbilityOne;
-	FTimerHandle TimerHandle_AbilityTwo;
-
-	FHitResult LookHitResult;
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComponent;
@@ -55,28 +32,28 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UARLInteractionComponent* InteractionComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	UARLAttributeComponent* AttributeComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	UARLActionComponent* ActionComponent;
+	
 
 	void MoveForward(float val);
 
 	void MoveRight(float val);
 
-	void PrimaryAttack();
+	void SprintStart();
+	
+	void SprintEnd();
 
-	void PrimaryAttack_TimeElapsed();
+	void PrimaryAttack();
 
 	void AbilityOne();
 
-	void AbilityOne_TimeElapsed();
-
 	void AbilityTwo();
 
-    void AbilityTwo_TimeElapsed();
-
 	void PrimaryInteract();
-
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UARLAttributeComponent* OwningComp, float NewHealth, float Delta);
