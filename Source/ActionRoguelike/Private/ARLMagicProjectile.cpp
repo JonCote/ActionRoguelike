@@ -3,6 +3,7 @@
 
 #include "ARLMagicProjectile.h"
 
+#include "ARLActionComponent.h"
 #include "ARLAttributeComponent.h"
 #include "ARLGameplayFunctionLibrary.h"
 #include "Components/SphereComponent.h"
@@ -25,16 +26,20 @@ void AARLMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponen
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		// if (UARLAttributeComponent* AttributeComp = Cast<UARLAttributeComponent>(OtherActor->GetComponentByClass(UARLAttributeComponent::StaticClass())))
-		// {
-		// 	AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
-		//
-		// 	Super::OnActorOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-		// }
+		UARLActionComponent* ActionComponent = Cast<UARLActionComponent>(OtherActor->GetComponentByClass(UARLActionComponent::StaticClass()));
+		if (ActionComponent && ActionComponent->ActiveGameplayTags.HasTag(ParryTag))
+		{
+			//MovementComponent->Velocity = -MovementComponent->Velocity;
+			MovementComponent->Velocity *= -1.0f;
 
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
+		
 		if (UARLGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-			Super::OnActorOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+			//Super::OnActorOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+			Explode();
 		}
 	}
 }

@@ -4,6 +4,7 @@
 #include "AI/ARLAICharacter.h"
 
 #include "AIController.h"
+#include "ARLActionComponent.h"
 #include "ARLAttributeComponent.h"
 #include "ARLWorldUserWidget.h"
 #include "BrainComponent.h"
@@ -18,6 +19,7 @@ AARLAICharacter::AARLAICharacter()
 {
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComponent");
 	AttributeComponent = CreateDefaultSubobject<UARLAttributeComponent>("AttributeComponent");
+	ActionComponent = CreateDefaultSubobject<UARLActionComponent>("ActionComponent");
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 

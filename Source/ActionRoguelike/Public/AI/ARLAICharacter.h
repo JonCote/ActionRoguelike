@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ARLAICharacter.generated.h"
 
+class UARLActionComponent;
 class UARLWorldUserWidget;
 class UPawnSensingComponent;
 class UARLAttributeComponent;
@@ -22,29 +23,37 @@ public:
 
 protected:
 
+	UFUNCTION()
+	void OnPawnSeen(APawn* Pawn);
+
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, UARLAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	void SetTargetActor(AActor* NewTargetActor);
+
+	virtual void PostInitializeComponents() override;
+	
+
+protected:
+
 	UARLWorldUserWidget* ActiveHealthBar;
 	
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 	
-	void SetTargetActor(AActor* NewTargetActor);
-
-	virtual void PostInitializeComponents() override;
-
 	UPROPERTY(VisibleAnywhere, Category="Effects")
 	FName TimeToHitParamName;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	UARLAttributeComponent* AttributeComponent;
 
-	UFUNCTION()
-	void OnPawnSeen(APawn* Pawn);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	UARLActionComponent* ActionComponent;
 
-	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, UARLAttributeComponent* OwningComp, float NewHealth, float Delta);
+	
 
 	
 	
