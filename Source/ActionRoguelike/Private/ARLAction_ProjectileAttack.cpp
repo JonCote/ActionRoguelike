@@ -53,11 +53,7 @@ void UARLAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorChar
 		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 		ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
-		// FVector CameraLocation = CameraComponent->GetComponentLocation();
-		// FVector CameraForwards = CameraComponent->GetForwardVector();
-		// FVector TraceStart = CameraLocation + (CameraForwards * SpringArmComponent->TargetArmLength);
-		// FVector TraceEnd = CameraLocation + (CameraForwards * 5000.f);
+		
 		FVector TraceStart = InstigatorCharacter->GetPawnViewLocation();
 		FVector TraceEnd = TraceStart + (InstigatorCharacter->GetControlRotation().Vector() * 5000);
 

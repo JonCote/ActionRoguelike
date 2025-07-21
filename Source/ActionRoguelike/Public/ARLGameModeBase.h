@@ -18,7 +18,7 @@ class ACTIONROGUELIKE_API AARLGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 protected:
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="AI")
 	TSubclassOf<AActor> MinionClass;
 

@@ -8,6 +8,8 @@
 #include "ARLMagicProjectile.generated.h"
 
 
+class UARLActionEffect;
+
 UCLASS()
 class ACTIONROGUELIKE_API AARLMagicProjectile : public AARLProjectile
 {
@@ -31,5 +33,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	FGameplayTag ParryTag;
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category="Debuff")
+	TSubclassOf<UARLActionEffect> DebuffActionClass;
 	
 };

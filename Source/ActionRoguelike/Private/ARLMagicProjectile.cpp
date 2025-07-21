@@ -5,6 +5,7 @@
 
 #include "ARLActionComponent.h"
 #include "ARLAttributeComponent.h"
+#include "ARLActionEffect.h"
 #include "ARLGameplayFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -29,7 +30,6 @@ void AARLMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponen
 		UARLActionComponent* ActionComponent = Cast<UARLActionComponent>(OtherActor->GetComponentByClass(UARLActionComponent::StaticClass()));
 		if (ActionComponent && ActionComponent->ActiveGameplayTags.HasTag(ParryTag))
 		{
-			//MovementComponent->Velocity = -MovementComponent->Velocity;
 			MovementComponent->Velocity *= -1.0f;
 
 			SetInstigator(Cast<APawn>(OtherActor));
@@ -38,8 +38,12 @@ void AARLMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponen
 		
 		if (UARLGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-			//Super::OnActorOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 			Explode();
+
+			if (ActionComponent)
+			{
+				ActionComponent->AddAction(GetInstigator(), DebuffActionClass);
+			}
 		}
 	}
 }

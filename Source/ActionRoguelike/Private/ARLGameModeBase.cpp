@@ -5,6 +5,7 @@
 
 #include "ARLAttributeComponent.h"
 #include "ARLCharacter.h"
+#include "ARLPlayerState.h"
 #include "EngineUtils.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
@@ -16,6 +17,9 @@ static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("arl.SpawnBots"), true, TEX
 AARLGameModeBase::AARLGameModeBase()
 {
 	SpawnTimerInterval = 2.f;
+	
+	PlayerStateClass = AARLPlayerState::StaticClass();
+	
 }
 
 void AARLGameModeBase::StartPlay()

@@ -18,7 +18,10 @@ class ACTIONROGUELIKE_API UARLActionComponent : public UActorComponent
 public:
 	
 	UFUNCTION(BlueprintCallable, Category="Actions")
-	void AddAction(TSubclassOf<UARLAction> ActionClass);
+	void AddAction(AActor* Instigator, TSubclassOf<UARLAction> ActionClass);
+
+	UFUNCTION(BlueprintCallable, Category="Actions")
+	void RemoveAction(UARLAction* ActionToRemove);
 
 	UFUNCTION(BlueprintCallable, Category="Actions")
 	bool StartActionByName(AActor* Instigator, FName ActionName);
@@ -53,3 +56,4 @@ protected:
 	
 		
 };
+

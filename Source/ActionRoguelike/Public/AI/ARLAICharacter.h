@@ -37,6 +37,9 @@ protected:
 protected:
 
 	UARLWorldUserWidget* ActiveHealthBar;
+
+	UPROPERTY(EditDefaultsOnly, Category="Credits")
+	int32 CreditsOnKill;
 	
 	UPROPERTY(EditDefaultsOnly, Category="UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;

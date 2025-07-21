@@ -19,7 +19,7 @@ void UARLActionComponent::BeginPlay()
 
 	for (TSubclassOf<UARLAction> ActionClass : DefaultActions)
 	{
-		AddAction(ActionClass);
+		AddAction(GetOwner(), ActionClass);
 	}
 }
 
@@ -28,13 +28,13 @@ void UARLActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
-	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
+	//FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
+	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
 	
 }
 
 
-void UARLActionComponent::AddAction(TSubclassOf<UARLAction> ActionClass)
+void UARLActionComponent::AddAction(AActor* Instigator, TSubclassOf<UARLAction> ActionClass)
 {
 	if (!ensure(ActionClass))
 	{
@@ -45,7 +45,20 @@ void UARLActionComponent::AddAction(TSubclassOf<UARLAction> ActionClass)
 	if (ensure(NewAction))
 	{
 		Actions.Add(NewAction);
+
+		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
+		{
+			NewAction->StartAction(Instigator);
+		}
 	}
+}
+
+
+void UARLActionComponent::RemoveAction(UARLAction* ActionToRemove)
+{
+	if (!ensure(ActionToRemove && !ActionToRemove->IsRunning())) return;
+
+	Actions.Remove(ActionToRemove);
 }
 
 
@@ -57,8 +70,8 @@ bool UARLActionComponent::StartActionByName(AActor* Instigator, FName ActionName
 		{
 			if (!Action->CanStart(Instigator))
 			{
-				FString FailedMsg = FString::Printf(TEXT("Failed to run: %s"), *ActionName.ToString());
-				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FailedMsg);
+				//FString FailedMsg = FString::Printf(TEXT("Failed to run: %s"), *ActionName.ToString());
+				//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FailedMsg);
 				continue;
 			}
 			

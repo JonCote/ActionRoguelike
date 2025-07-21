@@ -6,6 +6,8 @@
 #include "AIController.h"
 #include "ARLActionComponent.h"
 #include "ARLAttributeComponent.h"
+#include "ARLCharacter.h"
+#include "ARLPlayerState.h"
 #include "ARLWorldUserWidget.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -27,6 +29,7 @@ AARLAICharacter::AARLAICharacter()
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParamName = "TimeToHit";
+	CreditsOnKill = 20;
 }
 
 void AARLAICharacter::PostInitializeComponents()
@@ -83,8 +86,14 @@ void AARLAICharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeComp
 
 			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			GetCharacterMovement()->DisableMovement();
-			
-			
+
+			if (APawn* KillerPawn = Cast<APawn>(InstigatorActor))
+			{
+				if (AARLPlayerState* PS = KillerPawn->GetPlayerState<AARLPlayerState>())
+				{
+					PS->AddCredits(CreditsOnKill);
+				}
+			}
 		}
 	}
 }
@@ -96,7 +105,7 @@ void AARLAICharacter::SetTargetActor(AActor* NewTargetActor)
 	{
 		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTargetActor);
 
-		DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
+		//DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
 	}
 }
 
