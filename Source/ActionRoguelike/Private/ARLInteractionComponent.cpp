@@ -31,8 +31,14 @@ void UARLInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FindBestInteractable();
+	// Only run on local player
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn->IsLocallyControlled())
+	{
+		FindBestInteractable();
+	}
 }
+
 
 void UARLInteractionComponent::FindBestInteractable()
 {
@@ -65,7 +71,7 @@ void UARLInteractionComponent::FindBestInteractable()
 		{
 			if (bDebugDraw)
 			{
-				DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 2.0f);
+				DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 0.0f);
 			}
 			
 			if (HitActor->Implements<UARLGameplayInterface>())
@@ -103,13 +109,19 @@ void UARLInteractionComponent::FindBestInteractable()
 	
 	if (bDebugDraw)
 	{
-		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 2.0f);
+		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 0.0f, 0, 2.0f);
 	}
 }
 
 void UARLInteractionComponent::PrimaryInteract()
 {
-	if (FocusedActor == nullptr)
+	ServerInteract(FocusedActor);
+}
+
+
+void UARLInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
+{
+	if (InFocus == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No Focus Actor to interact.");
 		return;
@@ -117,6 +129,5 @@ void UARLInteractionComponent::PrimaryInteract()
 
 	APawn* MyPawn = Cast<APawn>(GetOwner());
 			
-	IARLGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
-	
+	IARLGameplayInterface::Execute_Interact(InFocus, MyPawn);
 }

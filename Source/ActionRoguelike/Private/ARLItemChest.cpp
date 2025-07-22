@@ -3,6 +3,7 @@
 
 #include "ARLItemChest.h"
 #include "Components/StaticMeshComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values
@@ -18,24 +19,27 @@ AARLItemChest::AARLItemChest()
 	LidMesh->SetupAttachment(BaseMesh);
 
 	TargetPitch = 110;
+
+	SetReplicates(true);
 }
 
 void AARLItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	LidMesh->SetRelativeRotation(FRotator(TargetPitch, 0, 0));
-	
+	bLidOpened = !bLidOpened;
+
+	// Manual call on server, clients will automatically call OnRep_LidOpened
+	OnRep_LidOpened();
 }
 
-// Called when the game starts or when spawned
-void AARLItemChest::BeginPlay()
+void AARLItemChest::OnRep_LidOpened()
 {
-	Super::BeginPlay();
-	
+	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;
+	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
 }
 
-// Called every frame
-void AARLItemChest::Tick(float DeltaTime)
+void AARLItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::Tick(DeltaTime);
-}
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(AARLItemChest, bLidOpened);
+}
