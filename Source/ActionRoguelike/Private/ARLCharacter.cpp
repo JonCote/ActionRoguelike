@@ -138,7 +138,7 @@ void AARLCharacter::OnHealthChanged(AActor* InstigatorActor, UARLAttributeCompon
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		GetCharacterMovement()->DisableMovement();
 
-		SetLifeSpan(10.0f);
+		SetLifeSpan(5.0f);
 		
 	}
 

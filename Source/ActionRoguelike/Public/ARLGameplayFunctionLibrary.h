@@ -17,6 +17,9 @@ class ACTIONROGUELIKE_API UARLGameplayFunctionLibrary : public UBlueprintFunctio
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	static bool ApplyHealing(AActor* Causer, AActor* TargetActor, float HealAmount);
+	
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount);
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")

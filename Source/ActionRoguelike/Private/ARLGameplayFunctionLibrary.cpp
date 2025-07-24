@@ -5,6 +5,16 @@
 
 #include "ARLAttributeComponent.h"
 
+bool UARLGameplayFunctionLibrary::ApplyHealing(AActor* Causer, AActor* TargetActor, float HealAmount)
+{
+	UARLAttributeComponent* AttributeComponent = UARLAttributeComponent::GetAttributes(TargetActor);
+	if (AttributeComponent)
+	{
+		return AttributeComponent->ApplyHealthChange(Causer, HealAmount);
+	}
+	return false;
+}
+
 bool UARLGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount)
 {
 	UARLAttributeComponent* AttributeComponent = UARLAttributeComponent::GetAttributes(TargetActor);

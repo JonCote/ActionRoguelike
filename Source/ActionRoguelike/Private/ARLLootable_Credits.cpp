@@ -9,6 +9,8 @@
 AARLLootable_Credits::AARLLootable_Credits()
 {
 	CreditsAmount = 80;
+
+	SetReplicates(true);
 }
 
 void AARLLootable_Credits::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -16,6 +18,7 @@ void AARLLootable_Credits::OnActorOverlap(UPrimitiveComponent* OverlappedCompone
 {
 	if (APawn* Pawn = Cast<APawn>(OtherActor))
 	{
+		if (!Pawn->HasAuthority()) return;
 		AARLPlayerState* PlayerState = Pawn->GetPlayerState<AARLPlayerState>();
 		if (PlayerState)
 		{

@@ -27,16 +27,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Credits")
 	bool RemoveCredits(int32 Delta);
-
-public:
 	
 	UPROPERTY(BlueprintAssignable, Category="Events")
 	FOnCreditsChanged OnCreditsChanged;
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, Category="Credits")
+	UFUNCTION(Server, Reliable)
+	void ServerAddCredits(int32 Delta);
+
+	UPROPERTY(ReplicatedUsing="OnRep_Credits", EditDefaultsOnly, Category="Credits")
 	int32 Credits;
 	
-	
+	UFUNCTION()
+	void OnRep_Credits(int32 OldCredits);
 };
+
+
+
