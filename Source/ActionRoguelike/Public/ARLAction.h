@@ -34,10 +34,18 @@ public:
 	
 	UWorld* GetWorld() const override;
 
+	virtual bool IsSupportedForNetworking() const override
+	{
+		return true;
+	}
+	
 protected:
 
 	UFUNCTION(BlueprintCallable, Category="Action")
 	UARLActionComponent* GetOwningComponent() const;
+
+	UFUNCTION()
+	void OnRep_IsRunning();
 	
 public:
 
@@ -49,7 +57,7 @@ public:
 	bool bAutoStart;
 	
 protected:
-
+	
 	/* Tags added to owning actor when activated, removed when action stops */
 	UPROPERTY(EditDefaultsOnly, Category="Tags")
 	FGameplayTagContainer GrantsTags;
@@ -57,8 +65,11 @@ protected:
 	/* Action can only start if OwningActor has none of these Tags applied */
 	UPROPERTY(EditDefaultsOnly, Category="Tags")
 	FGameplayTagContainer BlockedTags;
-	
+
+	UPROPERTY(ReplicatedUsing="OnRep_IsRunning")
 	bool bIsRunning;
+
+	
 	
 	
 };

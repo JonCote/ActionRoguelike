@@ -9,10 +9,6 @@
 AARLLootable_Credits::AARLLootable_Credits()
 {
 	CreditsAmount = 80;
-
-	
-
-	
 }
 
 void AARLLootable_Credits::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

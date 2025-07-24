@@ -18,9 +18,9 @@ public:
 
 	UARLActionEffect();
 	
-	void StartAction_Implementation(AActor* Instigator) override;
+	virtual void StartAction_Implementation(AActor* Instigator) override;
 
-	void StopAction_Implementation(AActor* Instigator) override;
+	virtual void StopAction_Implementation(AActor* Instigator) override;
 	
 protected:
 
@@ -34,7 +34,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Effect")
 	float Period;
-
+	
 	FTimerHandle PeriodHandle;
 	FTimerHandle DurationHandle;
 	

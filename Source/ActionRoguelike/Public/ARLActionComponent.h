@@ -16,6 +16,8 @@ class ACTIONROGUELIKE_API UARLActionComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+
+
 	
 	UFUNCTION(BlueprintCallable, Category="Actions")
 	void AddAction(AActor* Instigator, TSubclassOf<UARLAction> ActionClass);
@@ -35,10 +37,15 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual bool ReplicateSubobjects(class UActorChannel *Channel, class FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
+
 protected:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(AActor* Instigator, FName ActionName);
 	
 public:
 
@@ -46,12 +53,12 @@ public:
 	FGameplayTagContainer ActiveGameplayTags;
 	
 protected:
-
+	
 	/* Granted Abilities at game start */
 	UPROPERTY(EditAnywhere, Category="Actions")
 	TArray<TSubclassOf<UARLAction>> DefaultActions;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<UARLAction*> Actions;
 	
 		

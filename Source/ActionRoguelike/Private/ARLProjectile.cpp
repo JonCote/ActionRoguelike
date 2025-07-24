@@ -29,6 +29,8 @@ AARLProjectile::AARLProjectile()
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
 	AudioComponent->SetupAttachment(RootComponent);
+
+	SetReplicates(true);
 }
 
 void AARLProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

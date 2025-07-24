@@ -14,7 +14,7 @@ UARLActionEffect::UARLActionEffect()
 void UARLActionEffect::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
-
+	
 	if (Duration > 0.0f)
 	{
 		FTimerDelegate Delegate;

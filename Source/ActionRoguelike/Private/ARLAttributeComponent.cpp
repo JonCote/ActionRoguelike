@@ -4,6 +4,7 @@
 #include "ARLAttributeComponent.h"
 
 #include "ARLGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("arl.DamageMultiplier"), 1.0f, TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
@@ -12,14 +13,17 @@ static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("arl.DamageMultipli
 // Sets default values for this component's properties
 UARLAttributeComponent::UARLAttributeComponent()
 {
-	Health = 100;
 	MaxHealth = 100;
+	Health = MaxHealth;
+
+	SetIsReplicatedByDefault(true);
 }
 
 bool UARLAttributeComponent::IsAlive() const
 {
 	return Health > 0.0f;
 }
+
 
 bool UARLAttributeComponent::Kill(AActor* InstigatorActor)
 {
@@ -53,8 +57,12 @@ bool UARLAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float De
 	Health = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
 
 	float ActualDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
-
+	//OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+	if (ActualDelta != 0.0f)
+	{
+		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+	}
+	
 	// Died
 	if (ActualDelta < 0.0f && Health == 0.0f)
 	{
@@ -86,5 +94,21 @@ bool UARLAttributeComponent::IsActorAlive(AActor* Actor)
 		return AttributeComponent->IsAlive();
 	}
 	return false;
+}
+
+void UARLAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
+}
+
+void UARLAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UARLAttributeComponent, Health);
+	DOREPLIFETIME(UARLAttributeComponent, MaxHealth);
+
+	//~ conditions for optimization of network traffic
+	//DOREPLIFETIME_CONDITION(UARLAttributeComponent, MaxHealth, COND_OwnerOnly);
 }
 

@@ -16,6 +16,7 @@ AARLLootableActor::AARLLootableActor()
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AARLLootableActor::OnActorOverlap);
 
+	SetReplicates(true);
 }
 
 void AARLLootableActor::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
